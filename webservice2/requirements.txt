@@ -1,0 +1,3 @@
+flask
+cassandra-driver
+redis

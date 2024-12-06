@@ -1,0 +1,68 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - webservice1
+      - webservice2
+
+  webservice1:
+    build:
+      context: ./webservice1
+    ports:
+      - "5001:5000"
+    environment:
+      - CASSANDRA_HOST=cassandra1
+      - REDIS_HOST=redis
+    depends_on:
+      - cassandra1
+      - redis
+
+  webservice2:
+    build:
+      context: ./webservice2
+    ports:
+      - "5002:5000"
+    environment:
+      - CASSANDRA_HOST=cassandra2
+      - REDIS_HOST=redis
+    depends_on:
+      - cassandra2
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  cassandra1:
+    image: cassandra:latest
+    container_name: cassandra1
+    environment:
+      - CASSANDRA_CLUSTER_NAME=Test Cluster
+      - CASSANDRA_LISTENER_INTERFACE=eth0
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra1
+      - CASSANDRA_BROADCAST_RPC_ADDRESS=cassandra1
+    ports:
+      - "9042:9042"
+    volumes:
+      - ./cassandra/webservice1_init.cql:/docker-entrypoint-initd.d/init.cql
+
+  cassandra2:
+    image: cassandra:latest
+    container_name: cassandra2
+    environment:
+      - CASSANDRA_CLUSTER_NAME=Test Cluster
+      - CASSANDRA_LISTENER_INTERFACE=eth0
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra2
+      - CASSANDRA_BROADCAST_RPC_ADDRESS=cassandra2
+    ports:
+      - "9043:9042"
+    volumes:
+      - ./cassandra/webservice2_init.cql:/docker-entrypoint-initd.d/init.cql

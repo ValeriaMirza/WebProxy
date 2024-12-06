@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <script>
+        function createUser() {
+            var name = document.getElementById("name").value;
+            var email = document.getElementById("email").value;
+            var formData = new FormData();
+            formData.append("name", name);
+            formData.append("email", email);
+
+            fetch("/users", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert("User created! ID: " + data.user_id);
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            });
+        }
+
+        function getUsers() {
+            fetch("/users", {
+                method: "GET"
+            })
+            .then(response => response.json())
+            .then(users => {
+                var output = "<ul>";
+                users.forEach(user => {
+                    output += `<li>${user.name} (${user.email}) - ID: ${user.id}</li>`;
+                });
+                output += "</ul>";
+                document.getElementById("user-list").innerHTML = output;
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>User Management!</h1>
+    <h3>Create a new user</h3>
+    <form onsubmit="event.preventDefault(); createUser();">
+        <label>Name: </label><input type="text" id="name" required><br>
+        <label>Email: </label><input type="email" id="email" required><br>
+        <button type="submit">Create User</button>
+    </form>
+
+    <h3>All Users</h3>
+    <button onclick="getUsers()">Show Users</button>
+    <div id="user-list"></div>
+</body>
+</html>
